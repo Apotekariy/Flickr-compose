@@ -130,3 +130,41 @@ fun PhotoItem(photo: Photo, onClick: () -> Unit) {
         )
     }
     }
+
+@Composable
+fun CachedPhotoGrid(
+    photos: List<Photo>,
+    columns: Int,
+    onPhotoClick: (Photo) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        if (photos.isEmpty()) {
+            Text(
+                text = "Нет сохранённых фотографий",
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columns),
+                contentPadding = PaddingValues(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(
+                    count = photos.size,
+                    key = { index -> photos[index].id }
+                ) { index ->
+                    val photo = photos[index]
+                    PhotoItem(
+                        photo = photo,
+                        onClick = {
+                            Log.d("CachedPhotoGrid", "Photo clicked: ${photo.id}, title: ${photo.title}")
+                            onPhotoClick(photo)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}

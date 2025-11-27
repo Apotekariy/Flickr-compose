@@ -14,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,12 +42,17 @@ fun HomeScreen(
     var searchQuery by remember { mutableStateOf("cats") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    val isOnline by viewModel.isOnline.collectAsState()
+    val cachedPhotos by viewModel.cachedPhotos.collectAsState()
+
     Log.d("HomeScreen", "Photos count: ${photos.itemCount}")
+    Log.d("HomeScreen", "Is online: $isOnline")
+    Log.d("HomeScreen", "Cached photos: ${cachedPhotos.size}")
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Flickr Photos") }
+                title = { Text(if (isOnline) "Flickr Photos" else "Flickr Photos (Offline)") }
             )
         }
     ) { paddingValues ->
@@ -93,15 +99,29 @@ fun HomeScreen(
             )
 
             // Сетка фотографий
-            PhotoGrid(
-                photos = photos,
-                columns = columns,
-                onPhotoClick = { photo ->
-                    Log.d("HomeScreen", "onPhotoClick received: ${photo.id}")
-                    onPhotoClick(photo)
-                },
-                modifier = Modifier.weight(1f)
-            )
+            if (isOnline) {
+                // Онлайн - показываем Paging
+                PhotoGrid(
+                    photos = photos,
+                    columns = columns,
+                    onPhotoClick = { photo ->
+                        Log.d("HomeScreen", "onPhotoClick received: ${photo.id}")
+                        onPhotoClick(photo)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                // Оффлайн - показываем кэшированные фото
+                CachedPhotoGrid(
+                    photos = cachedPhotos,
+                    columns = columns,
+                    onPhotoClick = { photo ->
+                        Log.d("HomeScreen", "onPhotoClick (cached) received: ${photo.id}")
+                        onPhotoClick(photo)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }

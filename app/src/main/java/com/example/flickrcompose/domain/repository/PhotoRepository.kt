@@ -6,4 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface PhotoRepository {
     fun searchPhotos(query: String): Flow<PagingData<Photo>>
+    fun getCachedPhotos(): Flow<List<Photo>>
+
+    suspend fun clearCache()
 }
